@@ -1,0 +1,32 @@
+{
+  "name": "yquem",
+  "version": "1.0.0",
+  "description": "",
+  "main": "medoc.js",
+  "author": "BATTISTELLA Damien <battistella@protonmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wifsimster/yquem.git"
+  },
+  "keywords": [
+    "javascript",
+    "node.js",
+    "tv-shows",
+    "tv",
+    "directory",
+    "path",
+    "subtitles"
+  ],
+  "bugs": {
+    "url": "https://github.com/Wifsimster/yquem/issues"
+  },
+  "homepage": "https://github.com/Wifsimster/yquem#readme",
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}
