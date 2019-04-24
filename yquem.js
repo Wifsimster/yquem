@@ -45,48 +45,71 @@ module.exports = class {
     return result
   }
 
+  static getShowName(filename) {
+    if (filename) {
+      let name = filename.split(` - `)
+      return name[0].trim()
+    }
+    return null
+  }
+
+  static getShowNumber(filename) {
+    if (filename) {
+      var tmp = filename.split(` - `)
+      tmp = tmp[tmp.length - 1].trim()
+      tmp = tmp.split(`.`)
+      tmp = tmp[0]
+      tmp = tmp.split(`x`)
+      return { season: tmp[0], episode: tmp[1] }
+    }
+    return null
+  }
+
   static run(dir) {
     let files = this.getRecentFilesFromDirectory(dir)
 
-    console.log(files)
+    files.map(file => {
+      let tmp = file.split(`\\`)
+      let filename = tmp[tmp.length - 1]
+      let name = this.getShowName(filename)
+      let number = this.getShowNumber(filename)
 
-    // TODO : Get show name from filename path
+      this.getShow(name)
+        .then(result => {
+          if (
+            result.data &&
+            result.data.shows &&
+            result.data.shows.length > 0
+          ) {
+            let show = result.data.shows[0]
 
-    let showTitle = files[0]
-
-    // this.getShow(showTitle)
-    //   .then(result => {
-    //     if (result.data && result.data.shows) {
-    //       let show = result.data.shows[0]
-
-    //       let episodeNumber = `S01E01`
-
-    //       this.getSubtitlesByShowId(show.id)
-    //         .then(result => {
-    //           if (result.data && result.data.subtitles) {
-    //             let subtitles = result.data.subtitles
-
-    //             if (subtitles) {
-    //               subtitles = subtitles.filter(
-    //                 sub =>
-    //                   sub.episode.season === 1 && sub.episode.episode === 1
-    //               )
-    //               console.log(subtitles)
-    //             }
-    //           } else {
-    //             console.log(`Subtitle not found : "${showTitle}" !`)
-    //           }
-    //         })
-    //         .catch(err => {
-    //           console.error(err)
-    //         })
-    //     } else {
-    //       console.log(`Show not found : "${showTitle}" !`)
-    //     }
-    //   })
-    //   .catch(err => {
-    //     console.error(err)
-    //   })
+            this.getEpisodeByShow(
+              show.id,
+              `S${number.season}E${number.episode}`
+            )
+              .then(result => {
+                if (result.data && result.data.episode) {
+                  let episode = result.data.episode
+                  console.log(`${episode.subtitles}`)
+                } else {
+                  console.log(
+                    `Episode not found : "S${number.season}E${
+                      number.episode
+                    }" !`
+                  )
+                }
+              })
+              .catch(err => {
+                console.error(err)
+              })
+          } else {
+            console.log(`Show not found : "${name}" !`)
+          }
+        })
+        .catch(err => {
+          console.error(err)
+        })
+    })
   }
 
   static getShow(title) {
