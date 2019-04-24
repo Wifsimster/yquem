@@ -4,11 +4,12 @@
  */
 
 const fs = require("fs")
-const Path = require("path")
+const path = require("path")
 const axios = require("axios")
+const isWithinInterval = require("date-fns/isWithinInterval")
+const subDays = require("date-fns/subDays")
 
 const API_KEY = "0b07bc22f051"
-const API_KEY_2_0 = "8e07415eb43badc3ea4994ff71cdbac1"
 
 const instance = axios.create({
   baseURL: `http://api.betaseries.com/`,
@@ -19,53 +20,73 @@ const instance = axios.create({
 module.exports = class {
   constructor() {}
 
-  static run(path) {
-    fs.readdir(path, (err, directories) => {
-      if (err) {
-        reject(err)
+  static getRecentFilesFromDirectory(dir) {
+    const result = []
+    const files = [dir]
+    do {
+      const filepath = files.pop()
+      const stat = fs.lstatSync(filepath)
+      if (stat.isDirectory()) {
+        fs.readdirSync(filepath).forEach(f =>
+          files.push(path.join(filepath, f))
+        )
+      } else if (stat.isFile()) {
+        if (
+          isWithinInterval(new Date(stat.birthtimeMs), {
+            start: subDays(new Date(), 2),
+            end: new Date()
+          })
+        ) {
+          result.push(path.relative(dir, filepath))
+        }
       }
-      directories.map(directory => {
-        // console.log(directories)
-      })
+    } while (files.length !== 0)
 
-      let showTitle = directories[0]
+    return result
+  }
 
-      // TODO : Get recent episodes files from all directory
+  static run(dir) {
+    let files = this.getRecentFilesFromDirectory(dir)
 
-      this.getShow(showTitle)
-        .then(result => {
-          if (result.data && result.data.shows) {
-            let show = result.data.shows[0]
+    console.log(files)
 
-            let episodeNumber = `S01E01`
+    // TODO : Get show name from filename path
 
-            this.getSubtitlesByShowId(show.id)
-              .then(result => {
-                if (result.data && result.data.subtitles) {
-                  let subtitles = result.data.subtitles
+    let showTitle = files[0]
 
-                  if (subtitles) {
-                    subtitles = subtitles.filter(
-                      sub =>
-                        sub.episode.season === 1 && sub.episode.episode === 1
-                    )
-                    console.log(subtitles)
-                  }
-                } else {
-                  console.log(`Subtitle not found : "${showTitle}" !`)
-                }
-              })
-              .catch(err => {
-                console.error(err)
-              })
-          } else {
-            console.log(`Show not found : "${showTitle}" !`)
-          }
-        })
-        .catch(err => {
-          console.error(err)
-        })
-    })
+    // this.getShow(showTitle)
+    //   .then(result => {
+    //     if (result.data && result.data.shows) {
+    //       let show = result.data.shows[0]
+
+    //       let episodeNumber = `S01E01`
+
+    //       this.getSubtitlesByShowId(show.id)
+    //         .then(result => {
+    //           if (result.data && result.data.subtitles) {
+    //             let subtitles = result.data.subtitles
+
+    //             if (subtitles) {
+    //               subtitles = subtitles.filter(
+    //                 sub =>
+    //                   sub.episode.season === 1 && sub.episode.episode === 1
+    //               )
+    //               console.log(subtitles)
+    //             }
+    //           } else {
+    //             console.log(`Subtitle not found : "${showTitle}" !`)
+    //           }
+    //         })
+    //         .catch(err => {
+    //           console.error(err)
+    //         })
+    //     } else {
+    //       console.log(`Show not found : "${showTitle}" !`)
+    //     }
+    //   })
+    //   .catch(err => {
+    //     console.error(err)
+    //   })
   }
 
   static getShow(title) {
