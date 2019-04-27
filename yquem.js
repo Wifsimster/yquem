@@ -103,11 +103,14 @@ module.exports = class {
                       .get(subtitle.url)
                       .then(result => {
                         if (result.data) {
+                          let language = subtitle.language.toLowerCase()
+                          language = language === `vf` ? `fr` : `en`
+
                           const filePath = path.resolve(
                             `${episodePath}`,
                             `${show.title} - ${number.season}x${
                               number.episode
-                            }.${subtitle.language.toLowerCase()}.srt`
+                            }.${language}.srt`
                           )
 
                           this.writeFile(result.data, filePath)
