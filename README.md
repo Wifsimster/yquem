@@ -7,7 +7,7 @@ A JavaScript library which fetches subtitles for tv shows episodes from Beta Ser
 
 **Core Features**
 
-- Detect recent episodes from root directory, episodes filename must be `{show} - {season}x{epsiode}.{format}`;
+- Detect recent episodes (default 2 days) from root directory, episodes filename must be `{show} - {season}x{epsiode}.{format}`;
 - Download first subtitle found on Beta Series for this episode next to the episode file`.
 
 **Quick start**
