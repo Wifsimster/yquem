@@ -3,7 +3,7 @@
 A JavaScript library which fetches subtitles for tv shows episodes from Beta Series.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Wifsimster/yquem/blob/master/LICENSE)
-[![npm version](https://badge.fury.io/js/yquem.svg)](https://www.npmjs.com/package/yquem)
+[![npm version](https://badge.fury.io/js/yquem.svg)](https://badge.fury.io/js/yquem)
 
 **Core Features**
 
