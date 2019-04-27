@@ -69,10 +69,11 @@ module.exports = class {
     let files = this.getRecentFilesFromDirectory(dir)
 
     files.map(file => {
-      let tmp = file.split(`\\`)
-      let filename = tmp[tmp.length - 1]
-      let name = this.getShowName(filename)
-      let number = this.getShowNumber(filename)
+      const tmp = file.split(`\\`)
+      const episodePath = path.resolve(dir, tmp[0], tmp[1])
+      const filename = tmp[tmp.length - 1]
+      const name = this.getShowName(filename)
+      const number = this.getShowNumber(filename)
 
       this.getShow(name)
         .then(result => {
@@ -90,7 +91,48 @@ module.exports = class {
               .then(result => {
                 if (result.data && result.data.episode) {
                   let episode = result.data.episode
-                  console.log(`${episode.subtitles}`)
+                  if (episode.subtitles && episode.subtitles.length > 0) {
+                    console.log(
+                      `${show.title} - S${number.season}E${number.episode} : ${
+                        episode.subtitles.length
+                      }`
+                    )
+                    let subtitle = episode.subtitles[0]
+
+                    axios
+                      .get(subtitle.url)
+                      .then(result => {
+                        if (result.data) {
+                          const filePath = path.resolve(
+                            `${episodePath}`,
+                            `${show.title} - ${number.season}x${
+                              number.episode
+                            }.${subtitle.language.toLowerCase()}.srt`
+                          )
+
+                          this.writeFile(result.data, filePath)
+                            .then(filePath => {
+                              console.log(
+                                `[Write subtitle] ${filePath} write with success !`
+                              )
+                            })
+                            .catch(err => {
+                              console.error(
+                                `[Write subtitle] Error writeFile : ${err}`
+                              )
+                            })
+                        }
+                      })
+                      .catch(err => {
+                        console.error(`[Download subtitle] Error : ${err}`)
+                      })
+                  } else {
+                    console.log(
+                      `${show.title} - S${number.season}E${
+                        number.episode
+                      } : No subtitle found !`
+                    )
+                  }
                 } else {
                   console.log(
                     `Episode not found : "S${number.season}E${
@@ -100,14 +142,14 @@ module.exports = class {
                 }
               })
               .catch(err => {
-                console.error(err)
+                console.error(`[Get episode] Error : ${err}`)
               })
           } else {
             console.log(`Show not found : "${name}" !`)
           }
         })
         .catch(err => {
-          console.error(err)
+          console.error(`[Get show] Error : ${err}`)
         })
     })
   }
@@ -117,20 +159,21 @@ module.exports = class {
   }
 
   static getEpisodeByShow(id, number) {
-    return instance.get(`episodes/search?show_id=${id}&number=${number}`)
+    return instance.get(
+      `episodes/search?show_id=${id}&number=${number}&subtitles='vf'`
+    )
   }
 
-  static getEpisodeById(id) {
-    return instance.get(`episodes/display?id=${id}`)
-  }
+  static writeFile(data, filenamePath) {
+    return new Promise((resolve, reject) => {
+      const uData = new Uint8Array(Buffer.from(data))
 
-  static getSubtitlesByEpisodeId(id, language = `vf`) {
-    return instance.get(`subtitles/episode?id=${id}&language=${language}`)
+      fs.writeFile(filenamePath, uData, err => {
+        if (err) {
+          reject(err)
+        }
+        resolve(filenamePath)
+      })
+    })
   }
-
-  static getSubtitlesByShowId(id, language = `vf`) {
-    return instance.get(`subtitles/show?id=${id}&language=${language}`)
-  }
-
-  static getSubtitleUrl() {}
 }
