@@ -20,7 +20,7 @@ const instance = axios.create({
 module.exports = class {
   constructor() {}
 
-  static getRecentFilesFromDirectory(dir) {
+  static getRecentFilesFromDirectory(dir, fileAge = 2) {
     const result = []
     const files = [dir]
     do {
@@ -33,7 +33,7 @@ module.exports = class {
       } else if (stat.isFile()) {
         if (
           isWithinInterval(new Date(stat.birthtimeMs), {
-            start: subDays(new Date(), 2),
+            start: subDays(new Date(), fileAge),
             end: new Date()
           })
         ) {
@@ -65,8 +65,8 @@ module.exports = class {
     return null
   }
 
-  static run(dir) {
-    let files = this.getRecentFilesFromDirectory(dir)
+  static run(dir, fileAge = 2) {
+    let files = this.getRecentFilesFromDirectory(dir, fileAge)
 
     files.map(file => {
       const tmp = file.split(`\\`)
