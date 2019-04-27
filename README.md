@@ -2,6 +2,8 @@
 
 A JavaScript library which fetches subtitles for tv shows episodes from Beta Series.
 
+This library works weel with [https://github.com/Wifsimster/medoc](Medoc).
+
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Wifsimster/yquem/blob/master/LICENSE)
 [![npm version](https://badge.fury.io/js/yquem.svg)](https://badge.fury.io/js/yquem)
 
