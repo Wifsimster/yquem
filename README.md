@@ -10,7 +10,7 @@ This library works weel with [Medoc](https://github.com/Wifsimster/medoc).
 **Core Features**
 
 - Detect recent episodes (default 2 days) from root directory, episodes filename must be `{show} - {season}x{epsiode}.{format}`;
-- Download first subtitle found on Beta Series for this episode next to the episode file`.
+- Download first subtitle found on Beta Series for this episode next to the episode file.
 
 **Quick start**
 
