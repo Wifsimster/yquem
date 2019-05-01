@@ -97,7 +97,9 @@ module.exports = class {
                         episode.subtitles.length
                       }`
                     )
-                    let subtitle = episode.subtitles[0]
+
+                    // TODO : Need to get better system for subtitles
+                    let subtitle = episode.subtitles[1]
 
                     axios
                       .get(subtitle.url)
