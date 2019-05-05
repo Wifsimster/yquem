@@ -20,8 +20,118 @@ const instance = axios.create({
 module.exports = class {
   constructor(dir, fileAge = 1) {
     this.dir = dir
-
     this.fileAge = fileAge
+  }
+
+  run() {
+    return new Promise((resolve, reject) => {
+      let files = this.getRecentFilesFromDirectory(this.dir, this.fileAge)
+
+      if (files && files.length > 0) {
+        let promises = files.map(file => {
+          const tmp = file.split(`\\`)
+          const episodePath = path.resolve(this.dir, tmp[0], tmp[1])
+          const filename = tmp[tmp.length - 1]
+          const name = this.getShowName(filename)
+          const number = this.getShowNumber(filename)
+
+          return this.downloadSubtitle(episodePath, name, number)
+        })
+
+        Promise.all(promises)
+          .then(results => {
+            resolve(results)
+          })
+          .catch(err => {
+            reject(err)
+          })
+      } else {
+        reject("No file found !")
+      }
+    })
+  }
+
+  downloadSubtitle(episodePath, name, number) {
+    return new Promise((resolve, reject) => {
+      this.getShow(name)
+        .then(result => {
+          if (
+            result.data &&
+            result.data.shows &&
+            result.data.shows.length > 0
+          ) {
+            let show = result.data.shows[0]
+
+            this.getEpisodeByShow(
+              show.id,
+              `S${number.season}E${number.episode}`
+            )
+              .then(result => {
+                if (result.data && result.data.episode) {
+                  let episode = result.data.episode
+                  if (episode.subtitles && episode.subtitles.length > 0) {
+                    // console.log(
+                    //   `${show.title} - S${number.season}E${number.episode} : ${
+                    //     episode.subtitles.length
+                    //   }`
+                    // )
+
+                    let subtitle = episode.subtitles[1]
+
+                    axios
+                      .get(subtitle.url)
+                      .then(result => {
+                        if (result.data) {
+                          let language = subtitle.language.toLowerCase()
+                          language = language === `vf` ? `fr` : `en`
+
+                          const filePath = path.resolve(
+                            `${episodePath}`,
+                            `${show.title} - ${number.season}x${
+                              number.episode
+                            }.${language}.srt`
+                          )
+
+                          this.writeFile(result.data, filePath)
+                            .then(filePath => {
+                              resolve(`${filePath} write with success !`)
+                            })
+                            .catch(err => {
+                              reject(
+                                `[Write subtitle] Error writeFile : ${err}`
+                              )
+                            })
+                        }
+                      })
+                      .catch(err => {
+                        reject(`[Download subtitle] Error : ${err}`)
+                      })
+                  } else {
+                    resolve(
+                      `${show.title} - S${number.season}E${
+                        number.episode
+                      } : No subtitle found !`
+                    )
+                  }
+                } else {
+                  resolve(
+                    `Episode not found : "S${number.season}E${
+                      number.episode
+                    }" !`
+                  )
+                }
+              })
+              .catch(err => {
+                reject(`[Get episode] Error : ${err}`)
+              })
+          } else {
+            resolve(`Show not found : "${name}" !`)
+          }
+        })
+        .catch(err => {
+          reject(`[Get show] Error : ${err}`)
+        })
+    })
   }
 
   getRecentFilesFromDirectory() {
@@ -67,115 +177,6 @@ module.exports = class {
       return { season: tmp[0], episode: tmp[1] }
     }
     return null
-  }
-
-  run() {
-    return new Promise((resolve, reject) => {
-      let files = this.getRecentFilesFromDirectory(this.dir, this.fileAge)
-      let promises = []
-
-      files.map(file => {
-        const tmp = file.split(`\\`)
-        const episodePath = path.resolve(this.dir, tmp[0], tmp[1])
-        const filename = tmp[tmp.length - 1]
-        const name = this.getShowName(filename)
-        const number = this.getShowNumber(filename)
-
-        promises.push(
-          this.getShow(name)
-            .then(result => {
-              if (
-                result.data &&
-                result.data.shows &&
-                result.data.shows.length > 0
-              ) {
-                let show = result.data.shows[0]
-
-                this.getEpisodeByShow(
-                  show.id,
-                  `S${number.season}E${number.episode}`
-                )
-                  .then(result => {
-                    if (result.data && result.data.episode) {
-                      let episode = result.data.episode
-                      if (episode.subtitles && episode.subtitles.length > 0) {
-                        console.log(
-                          `${show.title} - S${number.season}E${
-                            number.episode
-                          } : ${episode.subtitles.length}`
-                        )
-
-                        let subtitle = episode.subtitles[1]
-
-                        axios
-                          .get(subtitle.url)
-                          .then(result => {
-                            if (result.data) {
-                              let language = subtitle.language.toLowerCase()
-                              language = language === `vf` ? `fr` : `en`
-
-                              const filePath = path.resolve(
-                                `${episodePath}`,
-                                `${show.title} - ${number.season}x${
-                                  number.episode
-                                }.${language}.srt`
-                              )
-
-                              this.writeFile(result.data, filePath)
-                                .then(filePath => {
-                                  console.log(
-                                    `[Write subtitle] ${filePath} write with success !`
-                                  )
-                                  resolve(
-                                    `[Write subtitle] ${filePath} write with success !`
-                                  )
-                                })
-                                .catch(err => {
-                                  reject(
-                                    `[Write subtitle] Error writeFile : ${err}`
-                                  )
-                                })
-                            }
-                          })
-                          .catch(err => {
-                            reject(`[Download subtitle] Error : ${err}`)
-                          })
-                      } else {
-                        resolve(
-                          `${show.title} - S${number.season}E${
-                            number.episode
-                          } : No subtitle found !`
-                        )
-                      }
-                    } else {
-                      resolve(
-                        `Episode not found : "S${number.season}E${
-                          number.episode
-                        }" !`
-                      )
-                    }
-                  })
-                  .catch(err => {
-                    reject(`[Get episode] Error : ${err}`)
-                  })
-              } else {
-                resolve(`Show not found : "${name}" !`)
-              }
-            })
-            .catch(err => {
-              reject(`[Get show] Error : ${err}`)
-            })
-        )
-      })
-
-      Promise.all(promises)
-        .then(results => {
-          resolve(results)
-        })
-        .catch(err => {
-          reject(err)
-        })
-    })
   }
 
   getShow(title) {
