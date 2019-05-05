@@ -26,7 +26,7 @@ const PATH_TO_SCAN = `z:`
 // new Yquem(PATH_TO_SCAN, fileAge = 2)
 const yquem = new Yquem(PATH_TO_SCAN)
 
-// Return promise
+// Return a promise
 yquem.run()
 ```
 
