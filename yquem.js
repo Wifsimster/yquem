@@ -18,11 +18,15 @@ const instance = axios.create({
 })
 
 module.exports = class {
-  constructor() {}
+  constructor(dir, fileAge = 1) {
+    this.dir = dir
 
-  static getRecentFilesFromDirectory(dir, fileAge = 2) {
+    this.fileAge = fileAge
+  }
+
+  getRecentFilesFromDirectory() {
     const result = []
-    const files = [dir]
+    const files = [this.dir]
     do {
       const filepath = files.pop()
       const stat = fs.lstatSync(filepath)
@@ -33,11 +37,11 @@ module.exports = class {
       } else if (stat.isFile()) {
         if (
           isWithinInterval(new Date(stat.birthtimeMs), {
-            start: subDays(new Date(), fileAge),
+            start: subDays(new Date(), this.fileAge),
             end: new Date()
           })
         ) {
-          result.push(path.relative(dir, filepath))
+          result.push(path.relative(this.dir, filepath))
         }
       }
     } while (files.length !== 0)
@@ -45,7 +49,7 @@ module.exports = class {
     return result
   }
 
-  static getShowName(filename) {
+  getShowName(filename) {
     if (filename) {
       let name = filename.split(` - `)
       return name[0].trim()
@@ -53,7 +57,7 @@ module.exports = class {
     return null
   }
 
-  static getShowNumber(filename) {
+  getShowNumber(filename) {
     if (filename) {
       var tmp = filename.split(` - `)
       tmp = tmp[tmp.length - 1].trim()
@@ -65,111 +69,126 @@ module.exports = class {
     return null
   }
 
-  static run(dir, fileAge = 2) {
-    let files = this.getRecentFilesFromDirectory(dir, fileAge)
+  run() {
+    return new Promise((resolve, reject) => {
+      let files = this.getRecentFilesFromDirectory(this.dir, this.fileAge)
+      let promises = []
 
-    files.map(file => {
-      const tmp = file.split(`\\`)
-      const episodePath = path.resolve(dir, tmp[0], tmp[1])
-      const filename = tmp[tmp.length - 1]
-      const name = this.getShowName(filename)
-      const number = this.getShowNumber(filename)
+      files.map(file => {
+        const tmp = file.split(`\\`)
+        const episodePath = path.resolve(this.dir, tmp[0], tmp[1])
+        const filename = tmp[tmp.length - 1]
+        const name = this.getShowName(filename)
+        const number = this.getShowNumber(filename)
 
-      this.getShow(name)
-        .then(result => {
-          if (
-            result.data &&
-            result.data.shows &&
-            result.data.shows.length > 0
-          ) {
-            let show = result.data.shows[0]
+        promises.push(
+          this.getShow(name)
+            .then(result => {
+              if (
+                result.data &&
+                result.data.shows &&
+                result.data.shows.length > 0
+              ) {
+                let show = result.data.shows[0]
 
-            this.getEpisodeByShow(
-              show.id,
-              `S${number.season}E${number.episode}`
-            )
-              .then(result => {
-                if (result.data && result.data.episode) {
-                  let episode = result.data.episode
-                  if (episode.subtitles && episode.subtitles.length > 0) {
-                    console.log(
-                      `${show.title} - S${number.season}E${number.episode} : ${
-                        episode.subtitles.length
-                      }`
-                    )
+                this.getEpisodeByShow(
+                  show.id,
+                  `S${number.season}E${number.episode}`
+                )
+                  .then(result => {
+                    if (result.data && result.data.episode) {
+                      let episode = result.data.episode
+                      if (episode.subtitles && episode.subtitles.length > 0) {
+                        console.log(
+                          `${show.title} - S${number.season}E${
+                            number.episode
+                          } : ${episode.subtitles.length}`
+                        )
 
-                    // TODO : Need to get better system for subtitles
-                    let subtitle = episode.subtitles[1]
+                        let subtitle = episode.subtitles[1]
 
-                    axios
-                      .get(subtitle.url)
-                      .then(result => {
-                        if (result.data) {
-                          let language = subtitle.language.toLowerCase()
-                          language = language === `vf` ? `fr` : `en`
+                        axios
+                          .get(subtitle.url)
+                          .then(result => {
+                            if (result.data) {
+                              let language = subtitle.language.toLowerCase()
+                              language = language === `vf` ? `fr` : `en`
 
-                          const filePath = path.resolve(
-                            `${episodePath}`,
-                            `${show.title} - ${number.season}x${
-                              number.episode
-                            }.${language}.srt`
-                          )
-
-                          this.writeFile(result.data, filePath)
-                            .then(filePath => {
-                              console.log(
-                                `[Write subtitle] ${filePath} write with success !`
+                              const filePath = path.resolve(
+                                `${episodePath}`,
+                                `${show.title} - ${number.season}x${
+                                  number.episode
+                                }.${language}.srt`
                               )
-                            })
-                            .catch(err => {
-                              console.error(
-                                `[Write subtitle] Error writeFile : ${err}`
-                              )
-                            })
-                        }
-                      })
-                      .catch(err => {
-                        console.error(`[Download subtitle] Error : ${err}`)
-                      })
-                  } else {
-                    console.log(
-                      `${show.title} - S${number.season}E${
-                        number.episode
-                      } : No subtitle found !`
-                    )
-                  }
-                } else {
-                  console.log(
-                    `Episode not found : "S${number.season}E${
-                      number.episode
-                    }" !`
-                  )
-                }
-              })
-              .catch(err => {
-                console.error(`[Get episode] Error : ${err}`)
-              })
-          } else {
-            console.log(`Show not found : "${name}" !`)
-          }
+
+                              this.writeFile(result.data, filePath)
+                                .then(filePath => {
+                                  console.log(
+                                    `[Write subtitle] ${filePath} write with success !`
+                                  )
+                                  resolve(
+                                    `[Write subtitle] ${filePath} write with success !`
+                                  )
+                                })
+                                .catch(err => {
+                                  reject(
+                                    `[Write subtitle] Error writeFile : ${err}`
+                                  )
+                                })
+                            }
+                          })
+                          .catch(err => {
+                            reject(`[Download subtitle] Error : ${err}`)
+                          })
+                      } else {
+                        resolve(
+                          `${show.title} - S${number.season}E${
+                            number.episode
+                          } : No subtitle found !`
+                        )
+                      }
+                    } else {
+                      resolve(
+                        `Episode not found : "S${number.season}E${
+                          number.episode
+                        }" !`
+                      )
+                    }
+                  })
+                  .catch(err => {
+                    reject(`[Get episode] Error : ${err}`)
+                  })
+              } else {
+                resolve(`Show not found : "${name}" !`)
+              }
+            })
+            .catch(err => {
+              reject(`[Get show] Error : ${err}`)
+            })
+        )
+      })
+
+      Promise.all(promises)
+        .then(results => {
+          resolve(results)
         })
         .catch(err => {
-          console.error(`[Get show] Error : ${err}`)
+          reject(err)
         })
     })
   }
 
-  static getShow(title) {
+  getShow(title) {
     return instance.get(`shows/search?title=${title}`)
   }
 
-  static getEpisodeByShow(id, number) {
+  getEpisodeByShow(id, number) {
     return instance.get(
       `episodes/search?show_id=${id}&number=${number}&subtitles='vf'`
     )
   }
 
-  static writeFile(data, filenamePath) {
+  writeFile(data, filenamePath) {
     return new Promise((resolve, reject) => {
       const uData = new Uint8Array(Buffer.from(data))
 

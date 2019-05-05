@@ -2,4 +2,14 @@ const Yquem = require("./yquem")
 
 const PATH_TO_SCAN = `z:`
 
-Yquem.run(PATH_TO_SCAN, 1)
+const yquem = new Yquem(PATH_TO_SCAN)
+
+yquem
+  .run()
+  .then(results => {
+    console.log(results)
+    console.log(`All done :)`)
+  })
+  .catch(err => {
+    console.error(err)
+  })

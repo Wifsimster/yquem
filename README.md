@@ -9,7 +9,7 @@ This library works weel with [Medoc](https://github.com/Wifsimster/medoc).
 
 **Core Features**
 
-- Detect recent episodes (default 2 days) from root directory, episodes filename must be `{show} - {season}x{epsiode}.{format}`;
+- Detect recent episodes (default 1 day) from root directory, episodes filename must be `{show} - {season}x{epsiode}.{format}`;
 - Download first subtitle found on Beta Series for this episode next to the episode file.
 
 **Quick start**
@@ -23,8 +23,11 @@ const Yquem = require("yquem")
 
 const PATH_TO_SCAN = `z:`
 
-// Yquem.run(PATH_TO_SCAN, fileAge = 2)
-Yquem.run(PATH_TO_SCAN)
+// new Yquem(PATH_TO_SCAN, fileAge = 2)
+const yquem = new Yquem(PATH_TO_SCAN)
+
+// Return promise
+yquem.run()
 ```
 
 That's all :)
