@@ -8,7 +8,6 @@ yquem
   .run()
   .then(results => {
     console.log(results)
-    console.log(`All done :)`)
   })
   .catch(err => {
     console.error(err)
