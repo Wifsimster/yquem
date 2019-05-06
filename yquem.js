@@ -70,42 +70,43 @@ module.exports = class {
                 if (result.data && result.data.episode) {
                   let episode = result.data.episode
                   if (episode.subtitles && episode.subtitles.length > 0) {
-                    // console.log(
-                    //   `${show.title} - S${number.season}E${number.episode} : ${
-                    //     episode.subtitles.length
-                    //   }`
-                    // )
-
                     let subtitle = episode.subtitles[1]
+                    if (subtitle && subtitle.url) {
+                      axios
+                        .get(subtitle.url)
+                        .then(result => {
+                          if (result.data) {
+                            let language = subtitle.language.toLowerCase()
+                            language = language === `vf` ? `fr` : `en`
 
-                    axios
-                      .get(subtitle.url)
-                      .then(result => {
-                        if (result.data) {
-                          let language = subtitle.language.toLowerCase()
-                          language = language === `vf` ? `fr` : `en`
+                            const filePath = path.resolve(
+                              `${episodePath}`,
+                              `${show.title} - ${number.season}x${
+                                number.episode
+                              }.${language}.srt`
+                            )
 
-                          const filePath = path.resolve(
-                            `${episodePath}`,
-                            `${show.title} - ${number.season}x${
-                              number.episode
-                            }.${language}.srt`
-                          )
-
-                          this.writeFile(result.data, filePath)
-                            .then(filePath => {
-                              resolve(`${filePath} write with success !`)
-                            })
-                            .catch(err => {
-                              reject(
-                                `[Write subtitle] Error writeFile : ${err}`
-                              )
-                            })
-                        }
-                      })
-                      .catch(err => {
-                        reject(`[Download subtitle] Error : ${err}`)
-                      })
+                            this.writeFile(result.data, filePath)
+                              .then(filePath => {
+                                resolve(`${filePath} write with success !`)
+                              })
+                              .catch(err => {
+                                reject(
+                                  `[Write subtitle] Error writeFile : ${err}`
+                                )
+                              })
+                          }
+                        })
+                        .catch(err => {
+                          reject(`[Download subtitle] Error : ${err}`)
+                        })
+                    } else {
+                      resolve(
+                        `${show.title} - ${episode.season}x${
+                          episode.episode
+                        } : Subtitle not found !`
+                      )
+                    }
                   } else {
                     resolve(
                       `${show.title} - S${number.season}E${
