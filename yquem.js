@@ -18,7 +18,7 @@ const instance = axios.create({
 })
 
 module.exports = class {
-  constructor(dir, fileAge = 1) {
+  constructor(dir, fileAge = 2) {
     this.dir = dir
     this.fileAge = fileAge
   }
@@ -55,17 +55,10 @@ module.exports = class {
     return new Promise((resolve, reject) => {
       this.getShow(name)
         .then(result => {
-          if (
-            result.data &&
-            result.data.shows &&
-            result.data.shows.length > 0
-          ) {
+          if (result.data && result.data.shows && result.data.shows.length > 0) {
             let show = result.data.shows[0]
 
-            this.getEpisodeByShow(
-              show.id,
-              `S${number.season}E${number.episode}`
-            )
+            this.getEpisodeByShow(show.id, `S${number.season}E${number.episode}`)
               .then(result => {
                 if (result.data && result.data.episode) {
                   let episode = result.data.episode
@@ -81,9 +74,7 @@ module.exports = class {
 
                             const filePath = path.resolve(
                               `${episodePath}`,
-                              `${show.title} - ${number.season}x${
-                                number.episode
-                              }.${language}.srt`
+                              `${show.title} - ${number.season}x${number.episode}.${language}.srt`
                             )
 
                             this.writeFile(result.data, filePath)
@@ -91,9 +82,7 @@ module.exports = class {
                                 resolve(`${filePath} write with success !`)
                               })
                               .catch(err => {
-                                reject(
-                                  `[Write subtitle] Error writeFile : ${err}`
-                                )
+                                reject(`[Write subtitle] Error writeFile : ${err}`)
                               })
                           }
                         })
@@ -101,25 +90,13 @@ module.exports = class {
                           reject(`[Download subtitle] Error : ${err}`)
                         })
                     } else {
-                      resolve(
-                        `${show.title} - ${episode.season}x${
-                          episode.episode
-                        } : Subtitle not found !`
-                      )
+                      resolve(`${show.title} - ${episode.season}x${episode.episode} : Subtitle not found !`)
                     }
                   } else {
-                    resolve(
-                      `${show.title} - S${number.season}E${
-                        number.episode
-                      } : No subtitle found !`
-                    )
+                    resolve(`${show.title} - S${number.season}E${number.episode} : No subtitle found !`)
                   }
                 } else {
-                  resolve(
-                    `Episode not found : "S${number.season}E${
-                      number.episode
-                    }" !`
-                  )
+                  resolve(`Episode not found : "S${number.season}E${number.episode}" !`)
                 }
               })
               .catch(err => {
@@ -142,9 +119,7 @@ module.exports = class {
       const filepath = files.pop()
       const stat = fs.lstatSync(filepath)
       if (stat.isDirectory()) {
-        fs.readdirSync(filepath).forEach(f =>
-          files.push(path.join(filepath, f))
-        )
+        fs.readdirSync(filepath).forEach(f => files.push(path.join(filepath, f)))
       } else if (stat.isFile()) {
         if (
           isWithinInterval(new Date(stat.birthtimeMs), {
@@ -185,9 +160,7 @@ module.exports = class {
   }
 
   getEpisodeByShow(id, number) {
-    return instance.get(
-      `episodes/search?show_id=${id}&number=${number}&subtitles='vf'`
-    )
+    return instance.get(`episodes/search?show_id=${id}&number=${number}&subtitles='vf'`)
   }
 
   writeFile(data, filenamePath) {
