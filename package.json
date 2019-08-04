@@ -1,6 +1,6 @@
 {
   "name": "yquem",
-  "version": "1.0.5",
+  "version": "1.1.0",
   "description": "Fetches subtitles for tv shows episodes from Beta Series.",
   "main": "yquem.js",
   "author": "BATTISTELLA Damien <battistella@protonmail.com>",
