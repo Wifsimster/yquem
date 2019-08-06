@@ -2,23 +2,16 @@
  * Yquem
  * Licensed under MIT, https://opensource.org/licenses/MIT/
  */
+const fs = require('fs')
+const path = require('path')
+const isWithinInterval = require('date-fns/isWithinInterval')
+const subDays = require('date-fns/subDays')
 
-const fs = require("fs")
-const path = require("path")
-const isWithinInterval = require("date-fns/isWithinInterval")
-const subDays = require("date-fns/subDays")
+const http = require('http')
+const https = require('https')
 
-const http = require("http")
-const https = require("https")
-
-const API_KEY = "0b07bc22f051"
 const BASE_URL = `http://api.betaseries.com/`
-
-// const instance = axios.create({
-//   baseURL: `http://api.betaseries.com/`,
-//   timeout: 1000,
-//   headers: { "X-BetaSeries-Version": "3.0", "X-BetaSeries-Key": API_KEY }
-// })
+const HEADERS = { 'X-BetaSeries-Version': '3.0', 'X-BetaSeries-Key': '0b07bc22f051' }
 
 module.exports = class {
   constructor(dir, fileAge = 2) {
@@ -49,7 +42,7 @@ module.exports = class {
             reject(err)
           })
       } else {
-        reject("No file found !")
+        reject('No file found !')
       }
     })
   }
@@ -67,33 +60,33 @@ module.exports = class {
               const { headers } = response
               https
                 .get(headers.location, response => {
-                  let data = ""
+                  let data = ''
 
-                  response.on("data", chunk => {
+                  response.on('data', chunk => {
                     data += chunk
                   })
 
-                  response.on("end", () => {
+                  response.on('end', () => {
                     resolve(data)
                   })
                 })
-                .on("error", err => {
+                .on('error', err => {
                   reject(`[Download subtitle] Error : ${err}`)
                 })
             } else {
-              let data = ""
+              let data = ''
 
-              response.on("data", chunk => {
+              response.on('data', chunk => {
                 data += chunk
               })
 
-              response.on("end", () => {
+              response.on('end', () => {
                 resolve(data)
               })
             }
           }
         })
-        .on("error", err => {
+        .on('error', err => {
           reject(`[Download subtitle] Error : ${err}`)
         })
     })
@@ -147,6 +140,7 @@ module.exports = class {
     do {
       const filepath = files.pop()
       const stat = fs.lstatSync(filepath)
+
       if (stat.isDirectory()) {
         fs.readdirSync(filepath).forEach(f => files.push(path.join(filepath, f)))
       } else if (stat.isFile()) {
@@ -187,28 +181,24 @@ module.exports = class {
   getShow(title) {
     return new Promise((resolve, reject) => {
       http
-        .get(
-          `${BASE_URL}shows/search?title=${title}`,
-          { headers: { "X-BetaSeries-Version": "3.0", "X-BetaSeries-Key": API_KEY } },
-          response => {
-            const { statusCode } = response
+        .get(`${BASE_URL}shows/search?title=${title}`, { headers: HEADERS }, response => {
+          const { statusCode } = response
 
-            if (statusCode < 400) {
-              let data = ""
+          if (statusCode < 400) {
+            let data = ''
 
-              response.on("data", chunk => {
-                data += chunk
-              })
+            response.on('data', chunk => {
+              data += chunk
+            })
 
-              response.on("end", () => {
-                resolve(JSON.parse(data))
-              })
-            } else {
-              reject(`[Download subtitle] Error : ${statusCode}`)
-            }
+            response.on('end', () => {
+              resolve(JSON.parse(data))
+            })
+          } else {
+            reject(`[Download subtitle] Error : ${statusCode}`)
           }
-        )
-        .on("error", err => {
+        })
+        .on('error', err => {
           reject(`[Download subtitle] Error : ${err}`)
         })
     })
@@ -219,18 +209,18 @@ module.exports = class {
       http
         .get(
           `${BASE_URL}episodes/search?show_id=${id}&number=${number}&subtitles='vf'`,
-          { headers: { "X-BetaSeries-Version": "3.0", "X-BetaSeries-Key": API_KEY } },
+          { headers: HEADERS },
           response => {
             const { statusCode } = response
 
             if (statusCode < 400) {
-              let data = ""
+              let data = ''
 
-              response.on("data", chunk => {
+              response.on('data', chunk => {
                 data += chunk
               })
 
-              response.on("end", () => {
+              response.on('end', () => {
                 resolve(JSON.parse(data))
               })
             } else {
@@ -238,7 +228,7 @@ module.exports = class {
             }
           }
         )
-        .on("error", err => {
+        .on('error', err => {
           reject(`[Download subtitle] Error : ${err}`)
         })
     })

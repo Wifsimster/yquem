@@ -1,6 +1,7 @@
-const Yquem = require("./yquem")
+const Yquem = require('./yquem')
 
-const PATH_TO_SCAN = `z:`
+// const PATH_TO_SCAN = `z:`
+const PATH_TO_SCAN = `D:\\hexawin8`
 
 const yquem = new Yquem(PATH_TO_SCAN)
 
