@@ -47,7 +47,7 @@ module.exports = class {
     })
   }
 
-  async download(url) {
+  static async download(url) {
     return new Promise((resolve, reject) => {
       https
         .get(url, response => {
@@ -92,13 +92,13 @@ module.exports = class {
     })
   }
 
-  async downloadSubtitle(episodePath, name, number) {
-    const resultsShow = await this.getShow(name)
+  static async downloadSubtitle(episodePath, options = { name: null, season: null, episode: null }) {
+    const resultsShow = await this.getShow(options.name)
 
     if (resultsShow.shows && resultsShow.shows.length > 0) {
       const show = resultsShow.shows[0]
 
-      const resultsEpisode = await this.getEpisodeByShow(show.id, `S${number.season}E${number.episode}`)
+      const resultsEpisode = await this.getEpisodeByShow(show.id, `S${options.season}E${options.episode}`)
 
       if (resultsEpisode.episode) {
         const episode = resultsEpisode.episode
@@ -115,7 +115,7 @@ module.exports = class {
 
               const filePath = path.resolve(
                 `${episodePath}`,
-                `${show.title} - ${number.season}x${number.episode}.${language}.srt`
+                `${show.title} - ${options.season}x${options.episode}.${language}.srt`
               )
 
               return await this.writeFile(fileData, filePath)
@@ -124,10 +124,10 @@ module.exports = class {
             console.error(`${show.title} - ${episode.season}x${episode.episode} : Subtitle not found !`)
           }
         } else {
-          console.error(`${show.title} - S${number.season}E${number.episode} : No subtitle found !`)
+          console.error(`${show.title} - S${options.season}E${options.episode} : No subtitle found !`)
         }
       } else {
-        console.error(`Episode not found : "S${number.season}E${number.episode}" !`)
+        console.error(`Episode not found : "S${options.season}E${options.episode}" !`)
       }
     } else {
       console.error(`No show found for "${name}" !`)

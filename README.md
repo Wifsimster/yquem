@@ -18,7 +18,7 @@ This library works weel with [Medoc](https://github.com/Wifsimster/medoc).
 $ npm install yquem
 ```
 
-## Usage\*
+## Usage
 
 ```js
 const Yquem = require('yquem')
@@ -37,12 +37,38 @@ yquem
 
 ## Documentation
 
-#### run([path])
+### Instance
+
+#### run()
 
 Look for recent files from `path`, try to grab subtitles from filename, returns a Promise when done.
+
+### Static
+
+#### download([url])
+
+Download file from a given `url`.
+
+##### url
+
+Type: `string`
+
+URL to request as a string.
+
+#### downloadSubtitle([path], [options])
+
+Download the first subtitle file found on Beta Series.
 
 ##### path
 
 Type: `string`
 
-The path to the directory you want to scan.
+The directory where to download the subtitle.
+
+##### options
+
+Type: `object`
+
+- `name` Name of the show
+- `season` Season number
+- `episode` Episode number
