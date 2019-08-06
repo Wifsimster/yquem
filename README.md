@@ -6,6 +6,7 @@ This library works weel with [Medoc](https://github.com/Wifsimster/medoc).
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Wifsimster/yquem/blob/master/LICENSE)
 [![npm version](https://badge.fury.io/js/yquem.svg)](https://badge.fury.io/js/yquem)
+[![Install size](https://packagephobia.now.sh/badge?p=yquem)](https://packagephobia.now.sh/result?p=yquem)
 
 ## Features
 
