@@ -49,26 +49,14 @@ Look for recent files from `path`, try to grab subtitles from filename, returns 
 
 Download file from a given `url`.
 
-##### url
-
-Type: `string`
-
-URL to request as a string.
+- `url <string>` URL to request as a string.
 
 #### downloadSubtitle([path], [options])
 
 Download the first subtitle file found on Beta Series.
 
-##### path
-
-Type: `string`
-
-The directory where to download the subtitle.
-
-##### options
-
-Type: `object`
-
-- `name` Name of the show
-- `season` Season number
-- `episode` Episode number
+- `path <string>` The directory where to download the subtitle.
+- `options <object>`
+- - `name <string>` Name of the show
+- - `season <string> | <number>` Season number
+- - `episode <string> | <number>` Episode number
