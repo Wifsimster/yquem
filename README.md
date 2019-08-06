@@ -101,7 +101,7 @@ Write a new file to `destinationPath`.
 
 #### buildEpisodeName([name], [season], [episode])
 
-Return the formatted episode name, ie : `Star Trek - 2x03`.
+Return the formatted episode name, ie : `Final Space - 2x03`.
 
 - `name` `<string>` Name of the show
 - `season` `<string> | <number>` Season number
