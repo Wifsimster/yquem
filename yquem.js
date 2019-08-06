@@ -47,6 +47,30 @@ module.exports = class {
     })
   }
 
+  getRecentFilesFromDirectory() {
+    const result = []
+    const files = [this.dir]
+    do {
+      const filepath = files.pop()
+      const stat = fs.lstatSync(filepath)
+
+      if (stat.isDirectory()) {
+        fs.readdirSync(filepath).forEach(f => files.push(path.join(filepath, f)))
+      } else if (stat.isFile()) {
+        if (
+          isWithinInterval(new Date(stat.birthtimeMs), {
+            start: subDays(new Date(), this.fileAge),
+            end: new Date()
+          })
+        ) {
+          result.push(path.relative(this.dir, filepath))
+        }
+      }
+    } while (files.length !== 0)
+
+    return result
+  }
+
   static async download(url) {
     return new Promise((resolve, reject) => {
       https
@@ -134,31 +158,7 @@ module.exports = class {
     }
   }
 
-  getRecentFilesFromDirectory() {
-    const result = []
-    const files = [this.dir]
-    do {
-      const filepath = files.pop()
-      const stat = fs.lstatSync(filepath)
-
-      if (stat.isDirectory()) {
-        fs.readdirSync(filepath).forEach(f => files.push(path.join(filepath, f)))
-      } else if (stat.isFile()) {
-        if (
-          isWithinInterval(new Date(stat.birthtimeMs), {
-            start: subDays(new Date(), this.fileAge),
-            end: new Date()
-          })
-        ) {
-          result.push(path.relative(this.dir, filepath))
-        }
-      }
-    } while (files.length !== 0)
-
-    return result
-  }
-
-  getShowName(filename) {
+  static getShowName(filename) {
     if (filename) {
       let name = filename.split(` - `)
       return name[0].trim()
@@ -166,7 +166,7 @@ module.exports = class {
     return null
   }
 
-  getShowNumber(filename) {
+  static getShowNumber(filename) {
     if (filename) {
       var tmp = filename.split(` - `)
       tmp = tmp[tmp.length - 1].trim()
@@ -178,7 +178,7 @@ module.exports = class {
     return null
   }
 
-  getShow(title) {
+  static getShow(title) {
     return new Promise((resolve, reject) => {
       http
         .get(`${BASE_URL}shows/search?title=${title}`, { headers: HEADERS }, response => {
@@ -204,7 +204,7 @@ module.exports = class {
     })
   }
 
-  getEpisodeByShow(id, number) {
+  static getEpisodeByShow(id, number) {
     return new Promise((resolve, reject) => {
       http
         .get(
@@ -234,7 +234,7 @@ module.exports = class {
     })
   }
 
-  writeFile(data, filenamePath) {
+  static writeFile(data, filenamePath) {
     return new Promise((resolve, reject) => {
       const uData = new Uint8Array(Buffer.from(data))
 

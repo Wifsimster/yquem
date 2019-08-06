@@ -41,7 +41,11 @@ yquem
 
 #### run()
 
-Look for recent files from `path`, try to grab subtitles from filename, returns a Promise when done.
+Look for recent files from the specified directory, try to grab subtitles from filename, returns a Promise when done.
+
+#### getRecentFilesFromDirectory()
+
+Return a list of recent files from the specified directory.
 
 ### Static
 
@@ -49,14 +53,46 @@ Look for recent files from `path`, try to grab subtitles from filename, returns 
 
 Download file from a given `url`.
 
-- `url` `<string>` URL to request as a string.
+- `url` `<string>` URL as a string.
 
 #### downloadSubtitle([path], [show])
 
 Download the first subtitle file found on Beta Series.
 
 - `path` `<string>` The directory where to download the subtitle.
-- `show` `<object>`
+- `show` `<object>` :
   - `name` `<string>` Name of the show
   - `season` `<string> | <number>` Season number
   - `episode` `<string> | <number>` Episode number
+
+#### getShowName([filename])
+
+Extract show name from filename.
+
+- `filename` `<string>` Episode filename, format : `Krypton - 1x01`.
+
+#### getShowNumber([filename])
+
+Extract season number and episode number from filename.
+
+- `filename` `<string>` Episode filename, format : `Smallville - 6x08`.
+
+#### getShow([name])
+
+Get the show object from Beta Series API.
+
+- `name` `<string>` Show name.
+
+#### getEpisodeByShow([id], [episode])
+
+Get the episode object from Beta Series API.
+
+- `id` `<string | number>` Show identifier.
+- `episode` `<string>` Episode description, format : `S01E01`.
+
+#### writeFile([data], [destinationPath])
+
+Write a new file to `destinationPath`.
+
+- `data` `<Buffer>` Date of the new file.
+- `destinationPath` `<string>` Complete path of the new file.
