@@ -31,7 +31,7 @@ module.exports = class {
           const name = this.getShowName(filename)
           const number = this.getShowNumber(filename)
 
-          return await this.downloadSubtitle(episodePath, name, number)
+          return await this.downloadSubtitle(episodePath, { name: name, season: number.season, episode: number.number })
         })
 
         Promise.all(promises)
