@@ -37,17 +37,20 @@ yquem
 
 ## Documentation
 
-### Instance
+### Instance methods
 
 #### run()
 
 Look for recent files from the specified directory, try to grab subtitles from filename, returns a Promise when done.
 
-#### getRecentFilesFromDirectory()
+### Static methods
+
+#### getRecentFilesFromDirectory([path], [fileAge])
 
 Return a list of recent files from the specified directory.
 
-### Static
+- `path` `<string>` Directory to scan.
+- `fileAge` `<string> | <number>` Number of days to consider a file to be recent.
 
 #### download([url])
 
@@ -55,11 +58,10 @@ Download file from a given `url`.
 
 - `url` `<string>` URL as a string.
 
-#### downloadSubtitle([path], [show])
+#### getSubtitles([show])
 
-Download the first subtitle file found on Beta Series.
+Get the list of subtitles found on Beta Series for an episode.
 
-- `path` `<string>` The directory where to download the subtitle.
 - `show` `<object>` :
   - `name` `<string>` Name of the show
   - `season` `<string> | <number>` Season number
@@ -96,3 +98,11 @@ Write a new file to `destinationPath`.
 
 - `data` `<Buffer>` Date of the new file.
 - `destinationPath` `<string>` Complete path of the new file.
+
+#### buildEpisodeName([name], [season], [episode])
+
+Return the formatted episode name, ie : `Star Trek - 2x03`.
+
+- `name` `<string>` Name of the show
+- `season` `<string> | <number>` Season number
+- `episode` `<string> | <number>` Episode number

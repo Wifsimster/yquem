@@ -12,8 +12,9 @@ const https = require('https')
 
 const BASE_URL = `http://api.betaseries.com/`
 const HEADERS = { 'X-BetaSeries-Version': '3.0', 'X-BetaSeries-Key': '0b07bc22f051' }
+const VIDEO_FORMATS = ['.avi', '.mkv', '.mp4', '.webm', '.flv', '.vob', '.ogg', '.amv']
 
-module.exports = class {
+module.exports = class Yquem {
   constructor(dir, fileAge = 2) {
     this.dir = dir
     this.fileAge = fileAge
@@ -21,17 +22,46 @@ module.exports = class {
 
   run() {
     return new Promise((resolve, reject) => {
-      const files = this.getRecentFilesFromDirectory(this.dir, this.fileAge)
+      const files = Yquem.getRecentFilesFromDirectory(this.dir, this.fileAge)
 
       if (files && files.length > 0) {
         const promises = files.map(async file => {
           const tmp = file.split(`\\`)
-          const episodePath = path.resolve(this.dir, tmp[0], tmp[1])
-          const filename = tmp[tmp.length - 1]
-          const name = this.getShowName(filename)
-          const number = this.getShowNumber(filename)
 
-          return await this.downloadSubtitle(episodePath, { name: name, season: number.season, episode: number.number })
+          if (tmp && tmp[0] && tmp[1]) {
+            const episodePath = path.join(this.dir, tmp[0], tmp[1])
+            const filename = tmp[tmp.length - 1]
+            const name = Yquem.getShowName(filename)
+            const episode = Yquem.getShowNumber(filename)
+            const episodeName = Yquem.buildEpisodeName(name, episode.season, episode.episode)
+
+            const subtitles = await Yquem.getSubtitles({
+              name: name,
+              season: episode.season,
+              episode: episode.episode
+            })
+
+            if (subtitles.length > 0) {
+              const subtitle = subtitles[0]
+
+              if (subtitle && subtitle.url) {
+                const fileData = await Yquem.download(subtitle.url)
+
+                if (fileData) {
+                  let language = subtitle.language.toLowerCase()
+                  language = language === `vf` ? `fr` : `en`
+
+                  const filePath = path.join(`${episodePath}`, `${episodeName}.${language}.srt`)
+
+                  return await Yquem.writeFile(fileData, filePath)
+                }
+              } else {
+                console.error(`${episodeName} : Subtitle not found !`)
+              }
+            } else {
+              console.error(`${episodeName} : No subtitle found !`)
+            }
+          }
         })
 
         Promise.all(promises)
@@ -47,9 +77,18 @@ module.exports = class {
     })
   }
 
-  getRecentFilesFromDirectory() {
+  static buildEpisodeName(name, season, number) {
+    if (Number(number) < 10) {
+      number = '0' + Number(number)
+    }
+
+    return `${name} - ${season}x${number}`
+  }
+
+  static getRecentFilesFromDirectory(dir, fileAge) {
     const result = []
-    const files = [this.dir]
+    const files = [dir]
+
     do {
       const filepath = files.pop()
       const stat = fs.lstatSync(filepath)
@@ -59,11 +98,14 @@ module.exports = class {
       } else if (stat.isFile()) {
         if (
           isWithinInterval(new Date(stat.birthtimeMs), {
-            start: subDays(new Date(), this.fileAge),
+            start: subDays(new Date(), fileAge),
             end: new Date()
           })
         ) {
-          result.push(path.relative(this.dir, filepath))
+          // Need to keep only video file
+          if (VIDEO_FORMATS.includes(path.extname(filepath))) {
+            result.push(path.relative(dir, filepath))
+          }
         }
       }
     } while (files.length !== 0)
@@ -116,7 +158,7 @@ module.exports = class {
     })
   }
 
-  static async downloadSubtitle(episodePath, options = { name: null, season: null, episode: null }) {
+  static async getSubtitles(options = { name: null, season: null, episode: null }) {
     const resultsShow = await this.getShow(options.name)
 
     if (resultsShow.shows && resultsShow.shows.length > 0) {
@@ -128,25 +170,7 @@ module.exports = class {
         const episode = resultsEpisode.episode
 
         if (episode.subtitles && episode.subtitles.length > 0) {
-          const subtitle = resultsEpisode.episode.subtitles[1]
-
-          if (subtitle && subtitle.url) {
-            const fileData = await this.download(subtitle.url)
-
-            if (fileData) {
-              let language = subtitle.language.toLowerCase()
-              language = language === `vf` ? `fr` : `en`
-
-              const filePath = path.resolve(
-                `${episodePath}`,
-                `${show.title} - ${options.season}x${options.episode}.${language}.srt`
-              )
-
-              return await this.writeFile(fileData, filePath)
-            }
-          } else {
-            console.error(`${show.title} - ${episode.season}x${episode.episode} : Subtitle not found !`)
-          }
+          return resultsEpisode.episode.subtitles
         } else {
           console.error(`${show.title} - S${options.season}E${options.episode} : No subtitle found !`)
         }
@@ -154,7 +178,7 @@ module.exports = class {
         console.error(`Episode not found : "S${options.season}E${options.episode}" !`)
       }
     } else {
-      console.error(`No show found for "${name}" !`)
+      console.error(`No show found for "${options.name}" !`)
     }
   }
 
