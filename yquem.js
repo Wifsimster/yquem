@@ -78,6 +78,48 @@ module.exports = class Yquem {
     })
   }
 
+  static async getSubtitle(file) {
+    const tmp = file.split(`\\`)
+
+    if (Array.isArray(tmp)) {
+      const episodePath = path.resolve(file)
+      const dirpath = path.dirname(episodePath)
+      const filename = tmp[tmp.length - 1]
+      const name = Yquem.getShowName(filename)
+      const episode = Yquem.getShowNumber(filename)
+      const episodeName = Yquem.buildEpisodeName(name, episode.season, episode.episode)
+
+      const subtitles = await Yquem.getSubtitles({
+        name: name,
+        season: episode.season,
+        episode: episode.episode
+      })
+
+      if (subtitles && subtitles.length > 0) {
+        const subtitle = subtitles[0]
+
+        if (subtitle && subtitle.url) {
+          const fileData = await Yquem.download(subtitle.url)
+
+          if (fileData) {
+            let language = subtitle.language.toLowerCase()
+            language = language === `vf` ? `fr` : `en`
+
+            const filePath = path.join(`${dirpath}`, `${episodeName}.${language}.srt`)
+
+            return await Yquem.writeFile(fileData, filePath)
+          }
+        } else {
+          console.error(`${episodeName} : Subtitle not found !`)
+        }
+      } else {
+        console.error(`${episodeName} : No subtitle found !`)
+      }
+    } else {
+      return false
+    }
+  }
+
   static buildEpisodeName(name, season, number) {
     if (Number(number) < 10) {
       number = "0" + Number(number)
