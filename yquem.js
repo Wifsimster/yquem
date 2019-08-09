@@ -26,42 +26,7 @@ module.exports = class Yquem {
 
       if (files && files.length > 0) {
         const promises = files.map(async file => {
-          const tmp = file.split(`\\`)
-
-          if (tmp && tmp[0] && tmp[1]) {
-            const episodePath = path.join(this.dir, tmp[0], tmp[1])
-            const filename = tmp[tmp.length - 1]
-            const name = Yquem.getShowName(filename)
-            const episode = Yquem.getShowNumber(filename)
-            const episodeName = Yquem.buildEpisodeName(name, episode.season, episode.episode)
-
-            const subtitles = await Yquem.getSubtitles({
-              name: name,
-              season: episode.season,
-              episode: episode.episode
-            })
-
-            if (subtitles && subtitles.length > 0) {
-              const subtitle = subtitles[0]
-
-              if (subtitle && subtitle.url) {
-                const fileData = await Yquem.download(subtitle.url)
-
-                if (fileData) {
-                  let language = subtitle.language.toLowerCase()
-                  language = language === `vf` ? `fr` : `en`
-
-                  const filePath = path.join(`${episodePath}`, `${episodeName}.${language}.srt`)
-
-                  return await Yquem.writeFile(fileData, filePath)
-                }
-              } else {
-                console.error(`${episodeName} : Subtitle not found !`)
-              }
-            } else {
-              console.error(`${episodeName} : No subtitle found !`)
-            }
-          }
+          return await Yquem.getSubtitle(file)
         })
 
         Promise.all(promises)
@@ -145,9 +110,8 @@ module.exports = class Yquem {
             end: new Date()
           })
         ) {
-          // Need to keep only video file
           if (VIDEO_FORMATS.includes(path.extname(filepath))) {
-            result.push(path.relative(dir, filepath))
+            result.push(path.resolve(filepath))
           }
         }
       }
