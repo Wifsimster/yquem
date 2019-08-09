@@ -2,17 +2,17 @@
  * Yquem
  * Licensed under MIT, https://opensource.org/licenses/MIT/
  */
-const fs = require('fs')
-const path = require('path')
-const isWithinInterval = require('date-fns/isWithinInterval')
-const subDays = require('date-fns/subDays')
+const fs = require("fs")
+const path = require("path")
+const isWithinInterval = require("date-fns/isWithinInterval")
+const subDays = require("date-fns/subDays")
 
-const http = require('http')
-const https = require('https')
+const http = require("http")
+const https = require("https")
 
 const BASE_URL = `http://api.betaseries.com/`
-const HEADERS = { 'X-BetaSeries-Version': '3.0', 'X-BetaSeries-Key': '0b07bc22f051' }
-const VIDEO_FORMATS = ['.avi', '.mkv', '.mp4', '.webm', '.flv', '.vob', '.ogg', '.amv']
+const HEADERS = { "X-BetaSeries-Version": "3.0", "X-BetaSeries-Key": "0b07bc22f051" }
+const VIDEO_FORMATS = [".avi", ".mkv", ".mp4", ".webm", ".flv", ".vob", ".ogg", ".amv"]
 
 module.exports = class Yquem {
   constructor(dir, fileAge = 2) {
@@ -41,7 +41,7 @@ module.exports = class Yquem {
               episode: episode.episode
             })
 
-            if (subtitles.length > 0) {
+            if (subtitles && subtitles.length > 0) {
               const subtitle = subtitles[0]
 
               if (subtitle && subtitle.url) {
@@ -69,17 +69,18 @@ module.exports = class Yquem {
             resolve(results)
           })
           .catch(err => {
+            console.log(err)
             reject(err)
           })
       } else {
-        reject('No file found !')
+        reject("No file found !")
       }
     })
   }
 
   static buildEpisodeName(name, season, number) {
     if (Number(number) < 10) {
-      number = '0' + Number(number)
+      number = "0" + Number(number)
     }
 
     return `${name} - ${season}x${number}`
@@ -126,33 +127,33 @@ module.exports = class Yquem {
               const { headers } = response
               https
                 .get(headers.location, response => {
-                  let data = ''
+                  let data = ""
 
-                  response.on('data', chunk => {
+                  response.on("data", chunk => {
                     data += chunk
                   })
 
-                  response.on('end', () => {
+                  response.on("end", () => {
                     resolve(data)
                   })
                 })
-                .on('error', err => {
+                .on("error", err => {
                   reject(`[Download subtitle] Error : ${err}`)
                 })
             } else {
-              let data = ''
+              let data = ""
 
-              response.on('data', chunk => {
+              response.on("data", chunk => {
                 data += chunk
               })
 
-              response.on('end', () => {
+              response.on("end", () => {
                 resolve(data)
               })
             }
           }
         })
-        .on('error', err => {
+        .on("error", err => {
           reject(`[Download subtitle] Error : ${err}`)
         })
     })
@@ -161,7 +162,7 @@ module.exports = class Yquem {
   static async getSubtitles(options = { name: null, season: null, episode: null }) {
     const resultsShow = await this.getShow(options.name)
 
-    if (resultsShow.shows && resultsShow.shows.length > 0) {
+    if (resultsShow && resultsShow.shows && resultsShow.shows.length > 0) {
       const show = resultsShow.shows[0]
 
       const resultsEpisode = await this.getEpisodeByShow(show.id, `S${options.season}E${options.episode}`)
@@ -169,8 +170,8 @@ module.exports = class Yquem {
       if (resultsEpisode.episode) {
         const episode = resultsEpisode.episode
 
-        if (episode.subtitles && episode.subtitles.length > 0) {
-          return resultsEpisode.episode.subtitles
+        if (episode && episode.subtitles && episode.subtitles.length > 0) {
+          return episode.subtitles
         } else {
           console.error(`${show.title} - S${options.season}E${options.episode} : No subtitle found !`)
         }
@@ -193,11 +194,13 @@ module.exports = class Yquem {
   static getShowNumber(filename) {
     if (filename) {
       var tmp = filename.split(` - `)
-      tmp = tmp[tmp.length - 1].trim()
-      tmp = tmp.split(`.`)
-      tmp = tmp[0]
-      tmp = tmp.split(`x`)
-      return { season: tmp[0], episode: tmp[1] }
+      if (tmp) {
+        tmp = tmp[tmp.length - 1].trim()
+        tmp = tmp.split(`.`)
+        tmp = tmp[0]
+        tmp = tmp.split(`x`)
+        return { season: tmp[0], episode: tmp[1] }
+      }
     }
     return null
   }
@@ -209,20 +212,20 @@ module.exports = class Yquem {
           const { statusCode } = response
 
           if (statusCode < 400) {
-            let data = ''
+            let data = ""
 
-            response.on('data', chunk => {
+            response.on("data", chunk => {
               data += chunk
             })
 
-            response.on('end', () => {
+            response.on("end", () => {
               resolve(JSON.parse(data))
             })
           } else {
             reject(`[Download subtitle] Error : ${statusCode}`)
           }
         })
-        .on('error', err => {
+        .on("error", err => {
           reject(`[Download subtitle] Error : ${err}`)
         })
     })
@@ -238,13 +241,13 @@ module.exports = class Yquem {
             const { statusCode } = response
 
             if (statusCode < 400) {
-              let data = ''
+              let data = ""
 
-              response.on('data', chunk => {
+              response.on("data", chunk => {
                 data += chunk
               })
 
-              response.on('end', () => {
+              response.on("end", () => {
                 resolve(JSON.parse(data))
               })
             } else {
@@ -252,7 +255,7 @@ module.exports = class Yquem {
             }
           }
         )
-        .on('error', err => {
+        .on("error", err => {
           reject(`[Download subtitle] Error : ${err}`)
         })
     })
