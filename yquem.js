@@ -72,7 +72,9 @@ module.exports = class Yquem {
 
             const filePath = path.join(`${dirpath}`, `${episodeName}.${language}.srt`)
 
-            return await Yquem.writeFile(fileData, filePath)
+            subtitle.file = await Yquem.writeFile(fileData, filePath)
+
+            return { file: file, subtitle: subtitle }
           }
         } else {
           console.error(`${episodeName} : Subtitle not found !`)
