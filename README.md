@@ -10,7 +10,7 @@ This library works weel with [Medoc](https://github.com/Wifsimster/medoc).
 
 ## Features
 
-- Detect recent episodes (default 1 day old) from a specific directory (filename must be `{show} - {season}x{episode}.{format}`);
+- Detect recent episodes (default 2 day old) from a specific directory (filename must be `{show} - {season}x{episode}.{format}`);
 - Download first subtitle found on Beta Series for this episode next to the episode file.
 
 ## Install
@@ -22,7 +22,7 @@ $ npm install yquem
 ## Usage
 
 ```js
-const Yquem = require('yquem')
+const Yquem = require("yquem")
 
 const yquem = new Yquem(`d:`)
 
@@ -52,6 +52,18 @@ Return a list of recent files from the specified directory.
 
 - `path` `<string>` Directory to scan.
 - `fileAge` `<string> | <number>` Number of days to consider a file to be recent.
+
+#### hasSubtitle([file])
+
+Check if a subtitle file exist next to the episode file specified.
+
+- `file` `<string>` Complete path of a episode file
+
+#### getSubtile([file])
+
+Search a subtitle onn Beta Series and download it next to the episode file specified.
+
+- `file` `<string>` Complete path of a episode file
 
 #### download([url])
 

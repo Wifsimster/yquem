@@ -43,6 +43,27 @@ module.exports = class Yquem {
     })
   }
 
+  static hasSubtitle(file) {
+    const tmp = file.split(`\\`)
+
+    if (Array.isArray(tmp)) {
+      const episodePath = path.resolve(file)
+      const dirpath = path.dirname(episodePath)
+      const filename = tmp[tmp.length - 1]
+      const name = Yquem.getShowName(filename)
+      const episode = Yquem.getShowNumber(filename)
+      const episodeName = Yquem.buildEpisodeName(name, episode.season, episode.episode)
+
+      if (
+        fs.existsSync(path.join(`${dirpath}`, `${episodeName}.fr.srt`)) ||
+        fs.existsSync(path.join(`${dirpath}`, `${episodeName}.en.srt`))
+      ) {
+        return true
+      }
+    }
+    return false
+  }
+
   static async getSubtitle(file) {
     const tmp = file.split(`\\`)
 
