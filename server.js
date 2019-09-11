@@ -13,5 +13,8 @@ const PATH_TO_SCAN = `z:`
 //     console.error(err)
 //   })
 
-const response = Yquem.hasSubtitle("z:\\Krypton\\Season 2\\Krypton - 2x09.avi")
+const response = Yquem.hasSubtitle(
+  "z:\\Krypton\\Season 2\\Krypton - 2x09.avi",
+  { languages: "en, fr" }
+)
 console.log(response)

@@ -55,7 +55,8 @@ module.exports = class Yquem {
     })
   }
 
-  static hasSubtitle(file) {
+  // Look for subtitles files next to a specific file
+  static hasSubtitle(file, options = { languages: ["en"] }) {
     if (file) {
       const tmp = file.split(`\\`)
 
@@ -71,12 +72,25 @@ module.exports = class Yquem {
           episode.episode
         )
 
-        if (
-          fs.existsSync(path.join(`${dirpath}`, `${episodeName}.fr.srt`)) ||
-          fs.existsSync(path.join(`${dirpath}`, `${episodeName}.en.srt`))
-        ) {
-          return true
+        let results = false
+
+        // Parse inline languages options
+        if (options.languages && !Array.isArray(options.languages)) {
+          options.languages = options.languages.split(",")
+          options.languages = options.languages.map(i => i.trim())
         }
+
+        options.languages.map(language => {
+          if (
+            fs.existsSync(
+              path.join(`${dirpath}`, `${episodeName}.${language}.srt`)
+            )
+          ) {
+            results = true
+          }
+        })
+
+        return results
       }
     }
     return false
