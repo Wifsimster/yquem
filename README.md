@@ -61,11 +61,13 @@ Check if a subtitle file exist next to the episode file specified.
 - `options` `<object>` :
   - `languages` `<string | array>` List of [languages](https://fr.wikipedia.org/wiki/Liste_des_codes_ISO_639-1) to look for, default: `en`
 
-#### getSubtile([file])
+#### getSubtile([file], { languages: 'en' })
 
 Search a subtitle onn Beta Series and download it next to the episode file specified.
 
 - `file` `<string>` Complete path of a episode file
+- `options` `<object>` :
+  - `languages` `<string | array>` List of [languages](https://fr.wikipedia.org/wiki/Liste_des_codes_ISO_639-1) to look for, default: `en`
 
 #### download([url])
 

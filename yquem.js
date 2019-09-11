@@ -96,7 +96,7 @@ module.exports = class Yquem {
     return false
   }
 
-  static async getSubtitle(file) {
+  static async getSubtitle(file, options = { languages: ["en"] }) {
     const tmp = file.split(`\\`)
 
     if (Array.isArray(tmp)) {
@@ -111,13 +111,31 @@ module.exports = class Yquem {
         episode.episode
       )
 
-      const subtitles = await Yquem.getSubtitles({
+      let subtitles = await Yquem.getSubtitles({
         name: name,
         season: episode.season,
         episode: episode.episode
       })
 
       if (subtitles && subtitles.length > 0) {
+        // Parse inline languages options
+        if (options.languages && !Array.isArray(options.languages)) {
+          options.languages = options.languages.split(",")
+          options.languages = options.languages.map(code => {
+            code = code.trim()
+            switch (code) {
+              case "en":
+                return "VO"
+              case "fr":
+                return "VF"
+            }
+          })
+        }
+
+        subtitles = subtitles.filter(subtitle =>
+          options.languages.includes(subtitle.language)
+        )
+
         const subtitle = subtitles[0]
 
         if (subtitle && subtitle.url) {
@@ -125,7 +143,15 @@ module.exports = class Yquem {
 
           if (fileData) {
             let language = subtitle.language.toLowerCase()
-            language = language === `vf` ? `fr` : `en`
+
+            switch (language) {
+              case "vo":
+                language = "en"
+                break
+              case "vf":
+                language = "fr"
+                break
+            }
 
             const filePath = path.join(
               `${dirpath}`,
