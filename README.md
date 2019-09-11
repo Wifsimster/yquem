@@ -53,11 +53,13 @@ Return a list of recent files from the specified directory.
 - `path` `<string>` Directory to scan.
 - `fileAge` `<string> | <number>` Number of days to consider a file to be recent.
 
-#### hasSubtitle([file])
+#### hasSubtitle([file], { languages: 'en' })
 
 Check if a subtitle file exist next to the episode file specified.
 
 - `file` `<string>` Complete path of a episode file
+- `options` `<object>` :
+  - `languages` `<string | array>` List of [languages](https://fr.wikipedia.org/wiki/Liste_des_codes_ISO_639-1) to look for, default: `en`
 
 #### getSubtile([file])
 
@@ -109,7 +111,7 @@ Get the episode object from Beta Series API.
 
 Write a new file to `destinationPath`.
 
-- `data` `<Buffer>` Date of the new file.
+- `data` `<buffer>` Date of the new file.
 - `destinationPath` `<string>` Complete path of the new file.
 
 #### buildEpisodeName([name], [season], [episode])
