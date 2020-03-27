@@ -28,6 +28,6 @@
   },
   "homepage": "https://github.com/Wifsimster/yquem#readme",
   "dependencies": {
-    "date-fns": "^2.6.0"
+    "date-fns": "^2.11.1"
   }
 }
