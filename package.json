@@ -9,7 +9,9 @@
     "start": "node server.js",
     "patch": "npm version patch && npm publish"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^8.35.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Wifsimster/yquem.git"
